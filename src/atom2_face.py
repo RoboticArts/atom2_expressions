@@ -22,17 +22,54 @@ back_right_mp4 = imageio.get_reader(video_path + "back_right.mp4" )
 
 newRosCommandFlag = False
 newRosCommand = ""
+last_expression = "IDLE"
+expressions_list = ['IDLE','LOOK_LEFT', 'LOOK_RIGHT', 'HAPPY', 'ANGRY', 'SAD','ATTENTIVE', 'CONFUSED']
 
 def callback(req):
 
     global newRosCommand
     global newRosCommandFlag
-    newRosCommand = req.expression
-    newRosCommandFlag = True
-    rospy.loginfo(rospy.get_caller_id() + "I heard %s", newRosCommand)
-    
+    global expressions_list
+    global last_expression
     res = SetExpressionResponse()
-    res.success = True
+
+    expression = req.expression
+
+    if expression != last_expression:
+
+        if expression in expressions_list:
+
+            newRosCommandFlag = True
+
+            switcher = {
+            'IDLE':       "idle",
+            'LOOK_LEFT':  "go_left",
+            'LOOK_RIGHT': "go_right",
+            'HAPPY':      "go_happy",
+            'ANGRY':      "go_angry",
+            'SAD':        "go_sad",
+            'ATTENTIVE':  "go_attentive",
+            'CONFUSED':   "go_confused"
+            }
+
+            newRosCommand = switcher.get(expression)
+            print(newRosCommand)
+            newRosCommand = expression
+            rospy.loginfo("Expression %s set successfully", newRosCommand) 
+            res.success = True
+            res.message = "Expression " + str(newRosCommand) + " set successfully"
+
+            last_expression = expression
+
+        else:
+            rospy.loginfo("Expression %s does not exist", expression)
+            res.success = False
+            res.message = "Expression " + str(expression) + " does not exist"
+
+    else:
+            rospy.loginfo("Expression %s is already running", expression)
+            res.success = False
+            res.message = "Expression " + str(expression) + " is already running"
 
     return res 
 
@@ -149,10 +186,12 @@ def playFakeEmotionBlocking(emotion_command, emotion_idle):
     #Update status
     updateEmotionState(emotion_command, False)
 
-    #Play video in blocking mode
-    for x in range(0, 10):
-        print(emotion_command)
-        rospy.sleep(0.1)
+    if emotion_command != "idle":
+
+        #Play video in blocking mode
+        for x in range(0, 10):
+            print(emotion_command)
+            rospy.sleep(0.1)
 
     #Update status
     updateEmotionState(emotion_command, True)
@@ -168,9 +207,8 @@ def playFakeEmotionBlocking(emotion_command, emotion_idle):
         #if emotion_command != getEmotionCommand():
         if isNewEmotionCommand():
             return
-#idle inicial
-# revisar idle sin espera
-# revisar cuando se manda dos veces seguidas el mismo comando
+
+# revisar porque se queda parado con el debug, no usar el idle del inicio y comprobar (last_expresion debe ser '')
 # averiguar como leer de los frames del video
 
 def playIdleEmotion(emotion_idle):
