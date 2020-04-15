@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import rospy
+from atom2_emotions.srv import SetExpression, SetExpressionResponse
 from std_msgs.msg import String
 import tkinter as tk, threading
 import imageio
@@ -19,22 +20,47 @@ go_right_mp4   = imageio.get_reader(video_path + "go_right.mp4" )
 back_right_mp4 = imageio.get_reader(video_path + "back_right.mp4" )
 
 
-def callback(data):
-    global shared_variable
-    shared_variable = 3
-    rospy.loginfo(rospy.get_caller_id() + "I heard %s", data.data)
+newRosCommandFlag = False
+newRosCommand = ""
 
+def callback(req):
+
+    global newRosCommand
+    global newRosCommandFlag
+    newRosCommand = req.expression
+    newRosCommandFlag = True
+    rospy.loginfo(rospy.get_caller_id() + "I heard %s", newRosCommand)
+    
+    res = SetExpressionResponse()
+    res.success = True
+
+    return res 
+
+def getRosCommand():
+
+    global newRosCommand
+    global newRosCommandFlag
+    newRosCommandFlag = False
+    return newRosCommand
+
+def isNewRosCommand():
+    return newRosCommandFlag
 
 ##################### Shared functions and variables for the threads ######################
 
-emotion = "idle"
-state = "idle"
-finished = True
+emotion = ""
+state = ""
+finished = False
+newEmotionCommandFlag = False
 
 def getCurrentEmotion():
     global state
     global finished
     return state, finished
+
+def getCurrentState():
+    global state
+    return state
 
 def updateEmotionState(emotion_state, emotion_finished):
     global state   
@@ -45,16 +71,27 @@ def updateEmotionState(emotion_state, emotion_finished):
 
 def setEmotionCommand(emotion_command):
     global emotion
+    global finished 
+    global newEmotionCommandFlag
+    newEmotionCommandFlag = True
+    finished = False
     emotion = emotion_command
 
 def getEmotionCommand():
+    global newEmotionCommandFlag
+    newEmotionCommandFlag = False
     global emotion
     return emotion
+
+def isNewEmotionCommand():
+    return newEmotionCommandFlag
 
 ############################# END OF SHARED FUNCTIONS AND VARIABLES #######################
 
 
 ################### THREAD 1: graphical interface for atom2 eyes ##########################
+
+frame = 0
 
 def interface_face(label):
 
@@ -74,39 +111,25 @@ def runInterfaceFace(label):
         #print ("I'm interface face")
         
         if command == "idle":
-            #print("idle")
             #playEmotionBlocking(idle_mp4, label)
-            playFakeEmotionBlocking(command)
+            playFakeEmotionBlocking(command, "idle")
 
         if command == "go_left":
-            #print("go_left")
             #playEmotionBlocking(go_left_mp4, label)
-            playFakeEmotionBlocking(command)
+            playFakeEmotionBlocking(command, "idle_left")
 
         if command == "back_left":
-            #print("back_left")
             #playEmotionBlocking(back_left_mp4, label)
-            playFakeEmotionBlocking(command)
-
-        if command == "idle_left":
-            #print("idle_left")
-            #playEmotionBlocking(idle_left_mp4, label)
-            playFakeEmotionBlocking(command)
+            playFakeEmotionBlocking(command, "idle")
 
         if command == "go_right":
-            #print("go_right")
             #playEmotionBlocking(go_right_mp4, label)
-            playFakeEmotionBlocking(command)
+            playFakeEmotionBlocking(command, "idle_right")
 
         if command == "back_right":
-            #print("back_right")
             #playEmotionBlocking(back_right_mp4, label)
-            playFakeEmotionBlocking(command)
+            playFakeEmotionBlocking(command, "idle")
 
-        if command == "idle_right":
-            #print("idle_right")
-            #playEmotionBlocking(idle_right_mp4, label)
-            playFakeEmotionBlocking(command)
 
 
 def playEmotionBlocking(video, label):
@@ -121,7 +144,7 @@ def playEmotionBlocking(video, label):
         label.image = frame_image
 
 
-def playFakeEmotionBlocking(emotion_command):
+def playFakeEmotionBlocking(emotion_command, emotion_idle):
 
     #Update status
     updateEmotionState(emotion_command, False)
@@ -134,40 +157,36 @@ def playFakeEmotionBlocking(emotion_command):
     #Update status
     updateEmotionState(emotion_command, True)
 
+    global frame
+    frame = 0
+
     #Wait new command
     while(True):
-        if emotion_command != getEmotionCommand():
+
+        playIdleEmotion(emotion_idle) #This function uses frame variable
+
+        #if emotion_command != getEmotionCommand():
+        if isNewEmotionCommand():
             return
-    
-    #Hold eyes. It changes go_emotion or back_emotion to idle_emotion
-    #idle_command = emotion_command.replace("go", "idle")
-    #idle_command = emotion_command.replace("back", "idle")
-    #setEmotionCommand(idle_command)
+#idle inicial
+# revisar idle sin espera
+# revisar cuando se manda dos veces seguidas el mismo comando
+# averiguar como leer de los frames del video
 
+def playIdleEmotion(emotion_idle):
 
-# def playFakeEmotionPolling(emotion_command):
+    global frame
+    end_frame = 20
 
-#     #Update the state
-#     updateEmotionState(emotion_command)
-    
-#     #Infinite loop until new command
-#     while(True):
-
-#         #Play video in polling mode
-#         for x in range(0, 10):
-
-#             print(emotion_command)
-#             rospy.sleep(0.1)
-
-#             if(pollingNewCommands())
-#                 return
-
-
-
+    if frame <= end_frame:
+        frame+=1
+        print(emotion_idle)
+        print(frame)
+        rospy.sleep(0.5)
+    else:
+        frame = 0
 
 ###################################### END OF THREAD 1 #####################################
-
-
 
 
 ################# THREAD 2: backend code to control graphical interface ####################
@@ -184,63 +203,44 @@ def runInterfaceControl():
 
     global emotion
 
+    setEmotionCommand("idle")
+    waitFaceInterface()
+
     while not rospy.is_shutdown():
 
-        print ("I'm interface control")
+        #print ("I'm interface control")
 
-        current_state, current_finished = getCurrentEmotion()
+        if isNewRosCommand():
 
-        if current_state.find("go") and current_finished:
+            rosscomand = getRosCommand()
+            state = getCurrentState()
 
-            while(True):
-                command = current_state.replace("go", "idle")
+            if state.find("go") != -1:
+                print("hey")
+                undo_state = state.replace("go","back")
+                setEmotionCommand(undo_state)
                 waitFaceInterface()
-                setEmotionCommand(command)  
-                if checkCommandROS():
-                    break
 
-        if current_state.find("back") and current_finished:
-            
-            while(True):
-                command = "idle"
+                setEmotionCommand(rosscomand)
                 waitFaceInterface()
-                setEmotionCommand(command) 
-                if checkCommandROS():
-                    break
 
-        if current_state.find("idle") and current_finished:
-            
-            while(True):
-                command = "idle"
+            else:
+                print("sitio")
+                setEmotionCommand(rosscomand)
                 waitFaceInterface()
-                setEmotionCommand(command) 
-                if checkCommandROS():
-                    break
 
-        
-        if checkCommandROS:
-            #get ROS emotion command
-            # First set idle emotion using go or back emotion
-            # setEmotionCommand (ROS emotion command)
+        # setEmotionCommand("go_left")
+        # waitFaceInterface()
+        # print("Espera A terminada")
 
+        # setEmotionCommand("go_right")
+        # waitFaceInterface()
+        # print("Espera B terminada")
 
-        waitFaceInterface()
-        setEmotionCommand("go_left")
+        # setEmotionCommand("back_right")
+        # waitFaceInterface()
+        # print("Espera C terminada")
 
-        waitFaceInterface()
-        setEmotionCommand("go_right")
-
-        waitFaceInterface()
-        setEmotionCommand("back_right")
-
-        waitFaceInterface()
-        setEmotionCommand("go_left")
-
-        waitFaceInterface()
-        setEmotionCommand("back_left")
-
-        waitFaceInterface()
-        setEmotionCommand("idle")
 
 
 def waitFaceInterface():
@@ -301,8 +301,8 @@ def waitFaceInterface():
 
 if __name__ == "__main__":
 
-    rospy.init_node('listener', anonymous=True)
-    rospy.Subscriber("chatter", String, callback)
+    rospy.init_node('atom2_face_node', anonymous=True)
+    rospy.Service('set_expression', SetExpression, callback)
 
     root = tk.Tk()
     my_label = tk.Label(root)
