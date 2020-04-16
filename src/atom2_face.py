@@ -19,6 +19,11 @@ back_left_mp4  = imageio.get_reader(video_path + "back_left.mp4" )
 go_right_mp4   = imageio.get_reader(video_path + "go_right.mp4" )
 back_right_mp4 = imageio.get_reader(video_path + "back_right.mp4" )
 
+end_frame_idle_mp4 =       len(list(idle_mp4.iter_data()))
+end_frame_go_left_mp4 =    len(list(go_left_mp4.iter_data()))
+end_frame_back_left_mp4 =  len(list(back_left_mp4.iter_data()))
+end_frame_go_right_mp4 =   len(list(go_right_mp4.iter_data()))
+end_frame_back_right_mp4 = len(list(back_right_mp4.iter_data()))
 
 newRosCommandFlag = False
 newRosCommand = ""
@@ -53,11 +58,9 @@ def callback(req):
             }
 
             newRosCommand = switcher.get(expression)
-            print(newRosCommand)
-            newRosCommand = expression
-            rospy.loginfo("Expression %s set successfully", newRosCommand) 
+            rospy.loginfo("Expression %s set successfully", expression) 
             res.success = True
-            res.message = "Expression " + str(newRosCommand) + " set successfully"
+            res.message = "Expression " + str(expression) + " set successfully"
 
             last_expression = expression
 
@@ -81,6 +84,7 @@ def getRosCommand():
     return newRosCommand
 
 def isNewRosCommand():
+    global newRosCommandFlag
     return newRosCommandFlag
 
 ##################### Shared functions and variables for the threads ######################
@@ -129,6 +133,7 @@ def isNewEmotionCommand():
 ################### THREAD 1: graphical interface for atom2 eyes ##########################
 
 frame = 0
+end_frame = 0
 
 def interface_face(label):
 
@@ -140,89 +145,174 @@ def interface_face(label):
 
 def runInterfaceFace(label):
 
+    counter = 0
+
     while not rospy.is_shutdown():
 
         #Update command from control_interface
         command = getEmotionCommand()
 
+        counter+=1
+
+        # if counter == 1:
+        #     command = "go_left"
+        # if counter == 2:
+        #     command = "idle"
+        # if counter == 3:
+        #     command = "back_right"
+
         #print ("I'm interface face")
-        
+
         if command == "idle":
-            #playEmotionBlocking(idle_mp4, label)
-            playFakeEmotionBlocking(command, "idle")
+            dummy = 0
+            playEmotionBlocking(label, command, "idle", idle_mp4, idle_mp4)
+            #playFakeEmotionBlocking(command, "idle") 
 
         if command == "go_left":
-            #playEmotionBlocking(go_left_mp4, label)
-            playFakeEmotionBlocking(command, "idle_left")
+            playEmotionBlocking(label, command, "go_left", go_left_mp4, go_left_mp4)
+            #playFakeEmotionBlocking(command, "idle_left")
 
         if command == "back_left":
-            #playEmotionBlocking(back_left_mp4, label)
-            playFakeEmotionBlocking(command, "idle")
+            playEmotionBlocking(label, command, "idle", back_left_mp4, back_left_mp4)
+            #playFakeEmotionBlocking(command, "idle")
 
         if command == "go_right":
-            #playEmotionBlocking(go_right_mp4, label)
-            playFakeEmotionBlocking(command, "idle_right")
+            playEmotionBlocking(label, command, "go_right", go_right_mp4, go_right_mp4)
+            #playFakeEmotionBlocking(command, "idle_right")
 
         if command == "back_right":
-            #playEmotionBlocking(back_right_mp4, label)
-            playFakeEmotionBlocking(command, "idle")
+            playEmotionBlocking(label, command, "idle", back_right_mp4, back_right_mp4)
+            #playFakeEmotionBlocking(command, "idle")
 
 
 
-def playEmotionBlocking(video, label):
-
-    frame = 0
-
-    for image in video.iter_data():
-        frame +=1
-        image_frame = Image.fromarray(image)
-        frame_image = ImageTk.PhotoImage(image_frame)
-        label.config(image=frame_image)
-        label.image = frame_image
-
-
-def playFakeEmotionBlocking(emotion_command, emotion_idle):
+def playEmotionBlocking(label, emotion_command, emotion_idle_command, video, video_idle):
 
     #Update status
     updateEmotionState(emotion_command, False)
 
-    if emotion_command != "idle":
 
-        #Play video in blocking mode
-        for x in range(0, 10):
-            print(emotion_command)
-            rospy.sleep(0.1)
-
+    counter = 0
+    for image in video.iter_data():
+        frame_image = ImageTk.PhotoImage(Image.fromarray(image))
+        label.config(image=frame_image)
+        label.image = frame_image
+        print(emotion_command)
+        counter+=1
+        print(counter)
+        
     #Update status
     updateEmotionState(emotion_command, True)
-
     global frame
-    frame = 0
+    global end_frame
+
+    end_frame = getEndFrame(emotion_idle_command) 
+    frame = 45
+    video_idle.set_image_index(45)
 
     #Wait new command
     while(True):
 
-        playIdleEmotion(emotion_idle) #This function uses frame variable
+        playIdleEmotion(label, emotion_idle_command, video_idle) #This function uses frame variable
 
         #if emotion_command != getEmotionCommand():
         if isNewEmotionCommand():
             return
 
-# revisar porque se queda parado con el debug, no usar el idle del inicio y comprobar (last_expresion debe ser '')
-# averiguar como leer de los frames del video
 
-def playIdleEmotion(emotion_idle):
-
+def playIdleEmotion(label,emotion_idle_command, video_idle):
+    
     global frame
-    end_frame = 20
+    global end_frame
 
-    if frame <= end_frame:
-        frame+=1
-        print(emotion_idle)
-        print(frame)
-        rospy.sleep(0.5)
-    else:
-        frame = 0
+    frame+=1
+    image = video_idle.get_next_data() 
+    frame_image = ImageTk.PhotoImage(Image.fromarray(image))
+    label.config(image=frame_image)
+    label.image = frame_image
+    print(emotion_idle_command)
+    print(frame)
+
+    if frame >= end_frame:
+            video_idle.set_image_index(45)
+            frame =45
+
+def getEndFrame(video_name):
+
+    global end_frame_idle_mp4 
+    global end_frame_go_left_mp4
+    global end_frame_back_left_mp4
+    global end_frame_go_right_mp4
+    global end_frame_back_right_mp4
+  
+    switcher = {
+        'idle':       end_frame_idle_mp4,
+        'go_left':    end_frame_go_left_mp4,
+        'back_left':  end_frame_back_left_mp4,
+        'idle_left':  end_frame_back_left_mp4,
+        'go_right':   end_frame_go_right_mp4,
+        'back_right': end_frame_back_right_mp4,
+        'idle_right': end_frame_back_right_mp4,
+        }
+
+    end_frame = switcher.get(video_name)
+
+    return end_frame
+
+
+# def playFakeEmotionBlocking(emotion_command, emotion_idle):
+
+#     #Update status
+#     updateEmotionState(emotion_command, False)
+
+#     if emotion_command != "idle":
+
+#         #Play video in blocking mode
+#         for x in range(0, 10):
+#             print(emotion_command)
+#             rospy.sleep(0.1)
+
+#     #Update status
+#     updateEmotionState(emotion_command, True)
+
+#     global frame
+#     frame = 0
+
+#     #Wait new command
+#     while(True):
+
+#         playFakeIdleEmotion(emotion_idle) #This function uses frame variable
+
+#         #if emotion_command != getEmotionCommand():
+#         if isNewEmotionCommand():
+#             return
+
+# poner el index del video diferente de 0, restrasa entre un video y otro
+
+# Revisar porque el video se para de una vez a otra
+# Añadir funcion de play especifica para idle
+# Comprobar que el nodo funciona la Jetson nano y la pantalla de 7''
+# Renderizar videos con idle, reducir el tamaño de los videos
+# Añadir los nuevos videos con las funciones y comprobar que funciona
+# Limpiar el código que sobre o organizarlo mejor
+
+# Esto de abajo no se si sigue pasando, revisar:
+# # revisar porque se queda parado con el debug, no usar el idle del inicio y comprobar (last_expresion debe ser '')
+
+# def playFakeIdleEmotion(emotion_idle):
+
+#     global frame
+#     end_frame = 20
+
+#     if frame <= end_frame:
+#         frame+=1
+#         print(emotion_idle)
+#         print(frame)
+#         rospy.sleep(0.5)
+#     else:
+#         frame = 0
+
+
 
 ###################################### END OF THREAD 1 #####################################
 
@@ -240,32 +330,34 @@ def interface_control():
 def runInterfaceControl():
 
     global emotion
-
     setEmotionCommand("idle")
     waitFaceInterface()
-
+    
     while not rospy.is_shutdown():
 
         #print ("I'm interface control")
 
         if isNewRosCommand():
 
-            rosscomand = getRosCommand()
+            roscomand = getRosCommand()
             state = getCurrentState()
 
             if state.find("go") != -1:
+
                 print("hey")
                 undo_state = state.replace("go","back")
                 setEmotionCommand(undo_state)
                 waitFaceInterface()
 
-                setEmotionCommand(rosscomand)
+                setEmotionCommand(roscomand)
                 waitFaceInterface()
 
             else:
                 print("sitio")
-                setEmotionCommand(rosscomand)
+                setEmotionCommand(roscomand)
                 waitFaceInterface()
+
+        rospy.sleep(0.05)
 
         # setEmotionCommand("go_left")
         # waitFaceInterface()
@@ -285,10 +377,12 @@ def waitFaceInterface():
     
     # Wait until the emotion has finished
     while(True):
+
         state, finished = getCurrentEmotion()
         if finished:
             return
 
+        rospy.sleep(0.05)
 
 
 
