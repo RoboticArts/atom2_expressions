@@ -13,17 +13,53 @@ shared_variable = 1
 video_path = "/home/robert/catkin_ws/src/atom2_emotions/src/animations/"
 
 
-idle_mp4       = imageio.get_reader(video_path + "idle.mp4")
-go_left_mp4    = imageio.get_reader(video_path + "go_left.mp4" )
-back_left_mp4  = imageio.get_reader(video_path + "back_left.mp4" )
-go_right_mp4   = imageio.get_reader(video_path + "go_right.mp4" )
-back_right_mp4 = imageio.get_reader(video_path + "back_right.mp4" )
+idle_mp4       = imageio.get_reader(video_path + "idle.gif")
+go_left_mp4    = imageio.get_reader(video_path + "go_left.gif" )
+back_left_mp4  = imageio.get_reader(video_path + "back_left.gif" )
+idle_left_mp4  = imageio.get_reader(video_path + "idle_left.gif" )
+go_right_mp4   = imageio.get_reader(video_path + "go_right.gif" )
+back_right_mp4 = imageio.get_reader(video_path + "back_right.gif" )
+idle_right_mp4  = imageio.get_reader(video_path + "idle_right.gif" )
+go_attention_mp4 = imageio.get_reader(video_path + "go_attention.gif" )
+back_attention_mp4 = imageio.get_reader(video_path + "back_attention.gif" )
+idle_attention_mp4 = imageio.get_reader(video_path + "idle_attention.gif" )
+go_laugh_mp4 = imageio.get_reader(video_path + "go_laugh.gif" )
+back_laugh_mp4 = imageio.get_reader(video_path + "back_laugh.gif" )
+idle_laugh_mp4 = imageio.get_reader(video_path + "idle_laugh.gif" )
+go_angry_mp4 = imageio.get_reader(video_path + "go_angry.gif" )
+back_angry_mp4 = imageio.get_reader(video_path + "back_angry.gif" )
+idle_angry_mp4 = imageio.get_reader(video_path + "idle_angry.gif" )
+go_sad_mp4 = imageio.get_reader(video_path + "go_sad.gif" )
+back_sad_mp4 = imageio.get_reader(video_path + "back_sad.gif" )
+idle_sad_mp4 = imageio.get_reader(video_path + "idle_sad.gif" )
+go_confused_mp4 = imageio.get_reader(video_path + "go_confused.gif" )
+back_confused_mp4 = imageio.get_reader(video_path + "back_confused.gif" )
+idle_confused_mp4 = imageio.get_reader(video_path + "idle_confused.gif" )
+
 
 end_frame_idle_mp4 =       len(list(idle_mp4.iter_data()))
 end_frame_go_left_mp4 =    len(list(go_left_mp4.iter_data()))
 end_frame_back_left_mp4 =  len(list(back_left_mp4.iter_data()))
+end_frame_idle_left_mp4 =  len(list(idle_left_mp4.iter_data()))
 end_frame_go_right_mp4 =   len(list(go_right_mp4.iter_data()))
 end_frame_back_right_mp4 = len(list(back_right_mp4.iter_data()))
+end_frame_idle_right_mp4 = len(list(idle_right_mp4.iter_data()))
+end_frame_go_attention_mp4 = len(list(go_attention_mp4.iter_data()))
+end_frame_back_attention_mp4 = len(list(back_attention_mp4.iter_data()))
+end_frame_idle_attention_mp4 = len(list(idle_attention_mp4.iter_data()))
+end_frame_go_laugh_mp4 = len(list(go_laugh_mp4.iter_data()))
+end_frame_back_laugh_mp4 = len(list(back_laugh_mp4.iter_data()))
+end_frame_idle_laugh_mp4 = len(list(idle_laugh_mp4.iter_data()))
+end_frame_go_angry_mp4 = len(list(go_angry_mp4.iter_data()))
+end_frame_back_angry_mp4 = len(list(back_angry_mp4.iter_data()))
+end_frame_idle_angry_mp4 = len(list(idle_angry_mp4.iter_data()))
+end_frame_go_sad_mp4 = len(list(go_sad_mp4.iter_data()))
+end_frame_back_sad_mp4 = len(list(back_sad_mp4.iter_data()))
+end_frame_idle_sad_mp4 = len(list(idle_sad_mp4.iter_data()))
+end_frame_go_confused_mp4 = len(list(go_confused_mp4.iter_data()))
+end_frame_back_confused_mp4 = len(list(back_confused_mp4.iter_data()))
+end_frame_idle_confused_mp4 = len(list(idle_confused_mp4.iter_data()))
+
 
 newRosCommandFlag = False
 newRosCommand = ""
@@ -50,10 +86,10 @@ def callback(req):
             'IDLE':       "idle",
             'LOOK_LEFT':  "go_left",
             'LOOK_RIGHT': "go_right",
-            'HAPPY':      "go_happy",
+            'HAPPY':      "go_laugh",
             'ANGRY':      "go_angry",
             'SAD':        "go_sad",
-            'ATTENTIVE':  "go_attentive",
+            'ATTENTIVE':  "go_attention",
             'CONFUSED':   "go_confused"
             }
 
@@ -169,22 +205,60 @@ def runInterfaceFace(label):
             #playFakeEmotionBlocking(command, "idle") 
 
         if command == "go_left":
-            playEmotionBlocking(label, command, "go_left", go_left_mp4, go_left_mp4)
+            playEmotionBlocking(label, command, "idle_left", go_left_mp4, idle_left_mp4)
             #playFakeEmotionBlocking(command, "idle_left")
 
         if command == "back_left":
-            playEmotionBlocking(label, command, "idle", back_left_mp4, back_left_mp4)
+            playEmotionBlocking(label, command, "idle", back_left_mp4, idle_mp4)
             #playFakeEmotionBlocking(command, "idle")
 
         if command == "go_right":
-            playEmotionBlocking(label, command, "go_right", go_right_mp4, go_right_mp4)
+            playEmotionBlocking(label, command, "idle_right", go_right_mp4, idle_right_mp4)
             #playFakeEmotionBlocking(command, "idle_right")
 
         if command == "back_right":
-            playEmotionBlocking(label, command, "idle", back_right_mp4, back_right_mp4)
+            playEmotionBlocking(label, command, "idle", back_right_mp4, idle_mp4)
             #playFakeEmotionBlocking(command, "idle")
 
+        if command == "go_attention":
+            playEmotionBlocking(label, command, "idle_attention", go_attention_mp4, idle_attention_mp4)
+            #playFakeEmotionBlocking(command, "idle_right")
 
+        if command == "back_attention":
+            playEmotionBlocking(label, command, "idle", back_attention_mp4, idle_mp4)
+            #playFakeEmotionBlocking(command, "idle")
+
+        if command == "go_laugh":
+            playEmotionBlocking(label, command, "idle_laugh", go_laugh_mp4, idle_laugh_mp4)
+            #playFakeEmotionBlocking(command, "idle_right")
+
+        if command == "back_laugh":
+            playEmotionBlocking(label, command, "idle", back_laugh_mp4, idle_mp4)
+            #playFakeEmotionBlocking(command, "idle")
+
+        if command == "go_angry":
+            playEmotionBlocking(label, command, "idle_angry", go_angry_mp4, idle_angry_mp4)
+            #playFakeEmotionBlocking(command, "idle_right")
+
+        if command == "back_angry":
+            playEmotionBlocking(label, command, "idle", back_angry_mp4, idle_mp4)
+            #playFakeEmotionBlocking(command, "idle")
+
+        if command == "go_sad":
+            playEmotionBlocking(label, command, "idle_sad", go_sad_mp4, idle_sad_mp4)
+            #playFakeEmotionBlocking(command, "idle_right")
+
+        if command == "back_sad":
+            playEmotionBlocking(label, command, "idle", back_sad_mp4, idle_mp4)
+            #playFakeEmotionBlocking(command, "idle")
+        
+        if command == "go_confused":
+            playEmotionBlocking(label, command, "idle_confused", go_confused_mp4, idle_confused_mp4)
+            #playFakeEmotionBlocking(command, "idle_right")
+
+        if command == "back_confused":
+            playEmotionBlocking(label, command, "idle", back_confused_mp4, idle_mp4)
+            #playFakeEmotionBlocking(command, "idle")
 
 def playEmotionBlocking(label, emotion_command, emotion_idle_command, video, video_idle):
 
@@ -207,8 +281,8 @@ def playEmotionBlocking(label, emotion_command, emotion_idle_command, video, vid
     global end_frame
 
     end_frame = getEndFrame(emotion_idle_command) 
-    frame = 45
-    video_idle.set_image_index(45)
+    frame = 0
+    video_idle.set_image_index(0)
 
     #Wait new command
     while(True):
@@ -234,25 +308,58 @@ def playIdleEmotion(label,emotion_idle_command, video_idle):
     print(frame)
 
     if frame >= end_frame:
-            video_idle.set_image_index(45)
-            frame =45
+            video_idle.set_image_index(0)
+            frame =0
 
 def getEndFrame(video_name):
 
     global end_frame_idle_mp4 
     global end_frame_go_left_mp4
     global end_frame_back_left_mp4
+    global end_frame_idle_left_mp4
     global end_frame_go_right_mp4
     global end_frame_back_right_mp4
-  
+    global end_frame_idle_right_mp4
+    global end_frame_go_attention_mp4
+    global end_frame_back_attention_mp4
+    global end_frame_idle_attention_mp4
+    global end_frame_go_laugh_mp4
+    global end_frame_back_laugh_mp4
+    global end_frame_idle_laugh_mp4
+    global end_frame_go_angry_mp4
+    global end_frame_back_angry_mp4
+    global end_frame_idle_angry_mp4
+    global end_frame_go_sad_mp4
+    global end_frame_back_sad_mp4
+    global end_frame_idle_sad_mp4
+    global end_frame_go_confused_mp4
+    global end_frame_back_confused_mp4
+    global end_frame_idle_confused_mp4
+
+
     switcher = {
         'idle':       end_frame_idle_mp4,
         'go_left':    end_frame_go_left_mp4,
         'back_left':  end_frame_back_left_mp4,
-        'idle_left':  end_frame_back_left_mp4,
+        'idle_left':  end_frame_idle_left_mp4,
         'go_right':   end_frame_go_right_mp4,
         'back_right': end_frame_back_right_mp4,
-        'idle_right': end_frame_back_right_mp4,
+        'idle_right': end_frame_idle_right_mp4,
+        'go_attention': end_frame_go_attention_mp4,
+        'back_attention': end_frame_back_attention_mp4,
+        'idle_attention': end_frame_idle_attention_mp4,
+        'go_laugh': end_frame_go_laugh_mp4,
+        'back_laugh': end_frame_back_laugh_mp4,
+        'idle_laugh': end_frame_idle_laugh_mp4,
+        'go_angry': end_frame_go_angry_mp4,
+        'back_angry': end_frame_back_angry_mp4,
+        'idle_angry': end_frame_idle_angry_mp4,
+        'go_sad': end_frame_go_sad_mp4,
+        'back_sad': end_frame_back_sad_mp4,
+        'idle_sad': end_frame_idle_sad_mp4,
+        'go_confused': end_frame_go_confused_mp4,
+        'back_confused': end_frame_back_confused_mp4,
+        'idle_confused': end_frame_idle_confused_mp4
         }
 
     end_frame = switcher.get(video_name)
@@ -289,11 +396,14 @@ def getEndFrame(video_name):
 
 # poner el index del video diferente de 0, restrasa entre un video y otro
 
-# Revisar porque el video se para de una vez a otra
+# Revisar porque el video se para de una vez a otra: usar gifs - Hecho
+# Añadir opcion fullscreen para todas las resoluciones, reescalar - Comprobado
+# Añadir path relativo en la ruta del video - Comprobado
 # Añadir funcion de play especifica para idle
-# Comprobar que el nodo funciona la Jetson nano y la pantalla de 7''
-# Renderizar videos con idle, reducir el tamaño de los videos
-# Añadir los nuevos videos con las funciones y comprobar que funciona
+# Añadir rosshutdown a runApplication,  usar get_data en vez de set_image_index (ese no va en la jetson nano), reescalars
+# Comprobar que el nodo funciona la Jetson nano y la pantalla de 7'' - Hecho
+# Renderizar videos con idle, reducir el tamaño de los videos - Hecho
+# Añadir los nuevos videos con las funciones y comprobar que funciona - Hecho
 # Limpiar el código que sobre o organizarlo mejor
 
 # Esto de abajo no se si sigue pasando, revisar:
