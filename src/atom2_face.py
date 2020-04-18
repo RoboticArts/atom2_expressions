@@ -7,11 +7,11 @@ import tkinter as tk, threading
 import imageio
 from PIL import Image, ImageTk
 import time
+import os
+import signal
 
-shared_variable = 1
 
-video_path = "/home/robert/catkin_ws/src/atom2_emotions/src/animations/"
-
+video_path = os.path.dirname(os.path.abspath(__file__)) + "/animations/"
 
 idle_mp4       = imageio.get_reader(video_path + "idle.gif")
 go_left_mp4    = imageio.get_reader(video_path + "go_left.gif" )
@@ -35,30 +35,6 @@ idle_sad_mp4 = imageio.get_reader(video_path + "idle_sad.gif" )
 go_confused_mp4 = imageio.get_reader(video_path + "go_confused.gif" )
 back_confused_mp4 = imageio.get_reader(video_path + "back_confused.gif" )
 idle_confused_mp4 = imageio.get_reader(video_path + "idle_confused.gif" )
-
-
-end_frame_idle_mp4 =       len(list(idle_mp4.iter_data()))
-end_frame_go_left_mp4 =    len(list(go_left_mp4.iter_data()))
-end_frame_back_left_mp4 =  len(list(back_left_mp4.iter_data()))
-end_frame_idle_left_mp4 =  len(list(idle_left_mp4.iter_data()))
-end_frame_go_right_mp4 =   len(list(go_right_mp4.iter_data()))
-end_frame_back_right_mp4 = len(list(back_right_mp4.iter_data()))
-end_frame_idle_right_mp4 = len(list(idle_right_mp4.iter_data()))
-end_frame_go_attention_mp4 = len(list(go_attention_mp4.iter_data()))
-end_frame_back_attention_mp4 = len(list(back_attention_mp4.iter_data()))
-end_frame_idle_attention_mp4 = len(list(idle_attention_mp4.iter_data()))
-end_frame_go_laugh_mp4 = len(list(go_laugh_mp4.iter_data()))
-end_frame_back_laugh_mp4 = len(list(back_laugh_mp4.iter_data()))
-end_frame_idle_laugh_mp4 = len(list(idle_laugh_mp4.iter_data()))
-end_frame_go_angry_mp4 = len(list(go_angry_mp4.iter_data()))
-end_frame_back_angry_mp4 = len(list(back_angry_mp4.iter_data()))
-end_frame_idle_angry_mp4 = len(list(idle_angry_mp4.iter_data()))
-end_frame_go_sad_mp4 = len(list(go_sad_mp4.iter_data()))
-end_frame_back_sad_mp4 = len(list(back_sad_mp4.iter_data()))
-end_frame_idle_sad_mp4 = len(list(idle_sad_mp4.iter_data()))
-end_frame_go_confused_mp4 = len(list(go_confused_mp4.iter_data()))
-end_frame_back_confused_mp4 = len(list(back_confused_mp4.iter_data()))
-end_frame_idle_confused_mp4 = len(list(idle_confused_mp4.iter_data()))
 
 
 newRosCommandFlag = False
@@ -188,77 +164,52 @@ def runInterfaceFace(label):
         #Update command from control_interface
         command = getEmotionCommand()
 
-        counter+=1
-
-        # if counter == 1:
-        #     command = "go_left"
-        # if counter == 2:
-        #     command = "idle"
-        # if counter == 3:
-        #     command = "back_right"
-
         #print ("I'm interface face")
 
         if command == "idle":
-            dummy = 0
             playEmotionBlocking(label, command, "idle", idle_mp4, idle_mp4)
-            #playFakeEmotionBlocking(command, "idle") 
-
+ 
         if command == "go_left":
             playEmotionBlocking(label, command, "idle_left", go_left_mp4, idle_left_mp4)
-            #playFakeEmotionBlocking(command, "idle_left")
 
         if command == "back_left":
             playEmotionBlocking(label, command, "idle", back_left_mp4, idle_mp4)
-            #playFakeEmotionBlocking(command, "idle")
 
         if command == "go_right":
             playEmotionBlocking(label, command, "idle_right", go_right_mp4, idle_right_mp4)
-            #playFakeEmotionBlocking(command, "idle_right")
 
         if command == "back_right":
             playEmotionBlocking(label, command, "idle", back_right_mp4, idle_mp4)
-            #playFakeEmotionBlocking(command, "idle")
 
         if command == "go_attention":
             playEmotionBlocking(label, command, "idle_attention", go_attention_mp4, idle_attention_mp4)
-            #playFakeEmotionBlocking(command, "idle_right")
 
         if command == "back_attention":
             playEmotionBlocking(label, command, "idle", back_attention_mp4, idle_mp4)
-            #playFakeEmotionBlocking(command, "idle")
 
         if command == "go_laugh":
             playEmotionBlocking(label, command, "idle_laugh", go_laugh_mp4, idle_laugh_mp4)
-            #playFakeEmotionBlocking(command, "idle_right")
 
         if command == "back_laugh":
             playEmotionBlocking(label, command, "idle", back_laugh_mp4, idle_mp4)
-            #playFakeEmotionBlocking(command, "idle")
 
         if command == "go_angry":
             playEmotionBlocking(label, command, "idle_angry", go_angry_mp4, idle_angry_mp4)
-            #playFakeEmotionBlocking(command, "idle_right")
 
         if command == "back_angry":
             playEmotionBlocking(label, command, "idle", back_angry_mp4, idle_mp4)
-            #playFakeEmotionBlocking(command, "idle")
 
         if command == "go_sad":
             playEmotionBlocking(label, command, "idle_sad", go_sad_mp4, idle_sad_mp4)
-            #playFakeEmotionBlocking(command, "idle_right")
 
         if command == "back_sad":
             playEmotionBlocking(label, command, "idle", back_sad_mp4, idle_mp4)
-            #playFakeEmotionBlocking(command, "idle")
         
         if command == "go_confused":
             playEmotionBlocking(label, command, "idle_confused", go_confused_mp4, idle_confused_mp4)
-            #playFakeEmotionBlocking(command, "idle_right")
 
         if command == "back_confused":
             playEmotionBlocking(label, command, "idle", back_confused_mp4, idle_mp4)
-            #playFakeEmotionBlocking(command, "idle")
 
 def playEmotionBlocking(label, emotion_command, emotion_idle_command, video, video_idle):
 
@@ -313,115 +264,74 @@ def playIdleEmotion(label,emotion_idle_command, video_idle):
 
 def getEndFrame(video_name):
 
-    global end_frame_idle_mp4 
-    global end_frame_go_left_mp4
-    global end_frame_back_left_mp4
-    global end_frame_idle_left_mp4
-    global end_frame_go_right_mp4
-    global end_frame_back_right_mp4
-    global end_frame_idle_right_mp4
-    global end_frame_go_attention_mp4
-    global end_frame_back_attention_mp4
-    global end_frame_idle_attention_mp4
-    global end_frame_go_laugh_mp4
-    global end_frame_back_laugh_mp4
-    global end_frame_idle_laugh_mp4
-    global end_frame_go_angry_mp4
-    global end_frame_back_angry_mp4
-    global end_frame_idle_angry_mp4
-    global end_frame_go_sad_mp4
-    global end_frame_back_sad_mp4
-    global end_frame_idle_sad_mp4
-    global end_frame_go_confused_mp4
-    global end_frame_back_confused_mp4
-    global end_frame_idle_confused_mp4
-
-
     switcher = {
-        'idle':       end_frame_idle_mp4,
-        'go_left':    end_frame_go_left_mp4,
-        'back_left':  end_frame_back_left_mp4,
-        'idle_left':  end_frame_idle_left_mp4,
-        'go_right':   end_frame_go_right_mp4,
-        'back_right': end_frame_back_right_mp4,
-        'idle_right': end_frame_idle_right_mp4,
-        'go_attention': end_frame_go_attention_mp4,
-        'back_attention': end_frame_back_attention_mp4,
-        'idle_attention': end_frame_idle_attention_mp4,
-        'go_laugh': end_frame_go_laugh_mp4,
-        'back_laugh': end_frame_back_laugh_mp4,
-        'idle_laugh': end_frame_idle_laugh_mp4,
-        'go_angry': end_frame_go_angry_mp4,
-        'back_angry': end_frame_back_angry_mp4,
-        'idle_angry': end_frame_idle_angry_mp4,
-        'go_sad': end_frame_go_sad_mp4,
-        'back_sad': end_frame_back_sad_mp4,
-        'idle_sad': end_frame_idle_sad_mp4,
-        'go_confused': end_frame_go_confused_mp4,
-        'back_confused': end_frame_back_confused_mp4,
-        'idle_confused': end_frame_idle_confused_mp4
-        }
+            'idle': 80,
+            'go_left': 9,
+            'back_left': 9,
+            'idle_left': 26,
+            'go_right': 9,
+            'back_right': 9,
+            'idle_right': 26,
+            'go_left': 9,
+            'back_left': 9,
+            'idle_left': 26,
+            'go_attention': 10,
+            'back_attention': 6,
+            'idle_attention': 26,
+            'go_laugh': 2,
+            'back_laugh': 7,
+            'idle_laugh': 33,
+            'go_angry': 8,
+            'back_angry': 8,
+            'idle_angry': 26,
+            'go_sad': 7,
+            'back_sad': 11,
+            'idle_sad': 26,
+            'go_confused': 6,
+            'back_confused': 6,
+            'idle_confused': 26,
+            }
 
     end_frame = switcher.get(video_name)
 
     return end_frame
 
 
-# def playFakeEmotionBlocking(emotion_command, emotion_idle):
+def printNumberOfFrames():
 
-#     #Update status
-#     updateEmotionState(emotion_command, False)
+    video_list = [
+              idle_mp4,
+              go_left_mp4, back_left_mp4, idle_left_mp4,
+              go_right_mp4, back_right_mp4, idle_right_mp4,
+              go_left_mp4, back_left_mp4, idle_left_mp4,
+              go_attention_mp4, back_attention_mp4, idle_attention_mp4,
+              go_laugh_mp4, back_laugh_mp4, idle_laugh_mp4,
+              go_angry_mp4, back_angry_mp4, idle_angry_mp4,
+              go_sad_mp4, back_sad_mp4, idle_sad_mp4,
+              go_confused_mp4, back_confused_mp4, idle_confused_mp4]
 
-#     if emotion_command != "idle":
+    video_list_name = [   
+              'idle',           
+              'go_left', 'back_left', 'idle_left',
+              'go_right', 'back_right', 'idle_right',
+              'go_left', 'back_left', 'idle_left',
+              'go_attention', 'back_attention', 'idle_attention',
+              'go_laugh', 'back_laugh', 'idle_laugh',
+              'go_angry','back_angry', 'idle_angry',
+              'go_sad', 'back_sad', 'idle_sad',
+              'go_confused', 'back_confused', 'idle_confused']
+              
+    video_name = 0
 
-#         #Play video in blocking mode
-#         for x in range(0, 10):
-#             print(emotion_command)
-#             rospy.sleep(0.1)
+    for video in video_list:
+        print ("'" + str(video_list_name[video_name]) + "': "+ str(len(list(video.iter_data()))) + ",")
+        video_name+=1
 
-#     #Update status
-#     updateEmotionState(emotion_command, True)
+    time.sleep(10)
 
-#     global frame
-#     frame = 0
-
-#     #Wait new command
-#     while(True):
-
-#         playFakeIdleEmotion(emotion_idle) #This function uses frame variable
-
-#         #if emotion_command != getEmotionCommand():
-#         if isNewEmotionCommand():
-#             return
-
-# poner el index del video diferente de 0, restrasa entre un video y otro
-
-# Revisar porque el video se para de una vez a otra: usar gifs - Hecho
-# Añadir opcion fullscreen para todas las resoluciones, reescalar - Comprobado
-# Añadir path relativo en la ruta del video - Comprobado
 # Añadir funcion de play especifica para idle
-# Añadir rosshutdown a runApplication,  usar get_data en vez de set_image_index (ese no va en la jetson nano), reescalars
-# Comprobar que el nodo funciona la Jetson nano y la pantalla de 7'' - Hecho
-# Renderizar videos con idle, reducir el tamaño de los videos - Hecho
-# Añadir los nuevos videos con las funciones y comprobar que funciona - Hecho
+# Cerrar por sigkill, (ctrl+C), poner icono
 # Limpiar el código que sobre o organizarlo mejor
-
-# Esto de abajo no se si sigue pasando, revisar:
-# # revisar porque se queda parado con el debug, no usar el idle del inicio y comprobar (last_expresion debe ser '')
-
-# def playFakeIdleEmotion(emotion_idle):
-
-#     global frame
-#     end_frame = 20
-
-#     if frame <= end_frame:
-#         frame+=1
-#         print(emotion_idle)
-#         print(frame)
-#         rospy.sleep(0.5)
-#     else:
-#         frame = 0
-
 
 
 ###################################### END OF THREAD 1 #####################################
@@ -469,19 +379,6 @@ def runInterfaceControl():
 
         rospy.sleep(0.05)
 
-        # setEmotionCommand("go_left")
-        # waitFaceInterface()
-        # print("Espera A terminada")
-
-        # setEmotionCommand("go_right")
-        # waitFaceInterface()
-        # print("Espera B terminada")
-
-        # setEmotionCommand("back_right")
-        # waitFaceInterface()
-        # print("Espera C terminada")
-
-
 
 def waitFaceInterface():
     
@@ -499,56 +396,25 @@ def waitFaceInterface():
 
 ###################################### END OF THREAD 2 #####################################
 
+root = tk.Tk()
 
-#  global shared_variable
+def sigint_handler(sig, frame):
+    root.quit()
+    root.update()
 
-#  for x in range(0, 10):
-#     frame = 0
-
-#     if x <= 4:
-
-#         for image in idle.iter_data():
-#             frame += 1                                    #counter to save new frame number
-#             image_frame = Image.fromarray(image)               #if you need the frame you can save each frame to hd
-#             frame_image = ImageTk.PhotoImage(image_frame)
-#             label.config(image=frame_image)
-#             label.image = frame_image
-
-#     if x == 5:
-        
-#         for image in go_left.iter_data():
-#             frame += 1                                    #counter to save new frame number
-#             image_frame = Image.fromarray(image)               #if you need the frame you can save each frame to hd
-#             frame_image = ImageTk.PhotoImage(image_frame)
-#             label.config(image=frame_image)
-#             label.image = frame_image
-
-#     if x == 6:
-        
-#         for image in back_left.iter_data():
-#             frame += 1                                    #counter to save new frame number
-#             image_frame = Image.fromarray(image)               #if you need the frame you can save each frame to hd
-#             frame_image = ImageTk.PhotoImage(image_frame)
-#             label.config(image=frame_image)
-#             label.image = frame_image
-    
-#     if x >= 7:    
-
-#         for image in idle.iter_data():
-#             frame += 1                                    #counter to save new frame number
-#             image_frame = Image.fromarray(image)               #if you need the frame you can save each frame to hd
-#             frame_image = ImageTk.PhotoImage(image_frame)
-#             label.config(image=frame_image)
-#             label.image = frame_image
 
 if __name__ == "__main__":
 
+    #printNumberOfFrames()
+
+    signal.signal(signal.SIGINT, sigint_handler)
     rospy.init_node('atom2_face_node', anonymous=True)
     rospy.Service('set_expression', SetExpression, callback)
 
-    root = tk.Tk()
     my_label = tk.Label(root)
     my_label.pack()
+    my_label.config(fg="black", bg="black")
+    my_label.place(relx=.5, rely=.5, anchor="center")
 
     thread_face = threading.Thread(target=interface_face, args=(my_label,))
     thread_face.daemon = 1
@@ -558,8 +424,19 @@ if __name__ == "__main__":
     thread_control.daemon = 1
     thread_control.start()
 
-    root.mainloop()
+    ws = root.winfo_screenwidth() # width of the screen
+    hs = root.winfo_screenheight() # height of the screen
+    x = (ws/2)
+    y = -100 + ((hs/2))
+    root.geometry('%dx%d+%d+%d' % (ws, hs, x, y))
+    root.configure(bg='black')
+    
+    try:
+        root.tk.call('wm', 'iconphoto', root._w, tk.PhotoImage(file=video_path+'icon_2.png'))
+    except:
+        print("Icon not found")
 
+    root.mainloop()
   
 
 
