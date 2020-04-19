@@ -4,13 +4,24 @@ import tkinter as tk, threading
 import imageio
 from PIL import Image, ImageTk
 import time
+import os
 
-video_name = "/home/robert/catkin_ws/src/atom2_emotions/src/animations/idle.mp4" 
+
+video_path = os.path.dirname(os.path.abspath(__file__)) + "/animations/"
+print(video_path)
+video_name = video_path + "idle.gif"
+
 video = imageio.get_reader(video_name)
 video_aux = video
 
-width  = int(1280/2)
-height = int(720/2)
+
+im = imageio.get_reader(video_name)
+for frame in im:
+    print(im.shape)
+
+
+width  = int(720)
+height = int(480)
 size = 100,100
 
 def stream(label):
@@ -69,12 +80,12 @@ if __name__ == "__main__":
     x = (ws/2)
     y = -100 + ((hs/2))
     root.geometry('%dx%d+%d+%d' % (ws, hs, x, y))
-    root.configure(bg='black')
+    root.configure(bg='white')
 
     my_label = tk.Label(root)
     my_label.pack()
     my_label.config(fg="black", bg="black")
-    my_label.place(x=ws/2, y=hs/2, anchor="center")
+    my_label.place(relx=.5, rely=.5, anchor="center")
     thread = threading.Thread(target=stream, args=(my_label,))
     thread.daemon = 1
     thread.start()
