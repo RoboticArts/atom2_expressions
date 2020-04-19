@@ -1,3 +1,31 @@
+"""
+---------------------------------------------------------------------
+Robotic Arts Industries
+All Rights Reserved 2017-2020
+---------------------------------------------------------------------
+Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)
+https://creativecommons.org/licenses/by-nc-sa/4.0/
+---------------------------------------------------------------------
+File: atom2_face.py
+Description:
+This file creates a graphical interface to generate the eyes of the atom2 robot. 
+Robot expressions are controlled from ROS through the set_expresion service.This
+program controls expressions but does not apply logic. For full functionality the
+following programs should be run:
+
+            -   atom2_hearing: manage voice recognition
+            -   atom2_vision: manage machine vision
+            -   atom2_speaking: handles speech
+            -   atom2_emotions_control: Apply logic based on the information received
+                                        by vision and hearing. Shows emotions by 
+                                        speech and eyes
+
+----------------------------------------------------------------------
+		Version: 0.0.1						| Last Modification: 19/04/2020
+		Author:  Robert Vasquez Zavaleta
+		Contact: roboticarts1@gmail.com
+"""
+
 #!/usr/bin/env python3
 
 import rospy
@@ -9,52 +37,46 @@ import imageio
 from PIL import Image, ImageTk
 import time
 import os
-import errno
 import signal
-from itertools import count
 
-################### START: Load gifs ##########################
+# --------------------------------- Load animations ---------------------------------- #
 
-
+video_list = {}
 video_path = os.path.dirname(os.path.abspath(__file__)) + "/animations/"
 
-try:
-    idle_mp4 = imageio.get_reader(video_path + "idle.gif")
-    go_left_mp4 = imageio.get_reader(video_path + "go_left.gif" )
-    back_left_mp4 = imageio.get_reader(video_path + "back_left.gif" )
-    idle_left_mp4 = imageio.get_reader(video_path + "idle_left.gif" )
-    go_right_mp4 = imageio.get_reader(video_path + "go_right.gif" )
-    back_right_mp4 = imageio.get_reader(video_path + "back_right.gif" )
-    idle_right_mp4  = imageio.get_reader(video_path + "idle_right.gif" )
-    go_attention_mp4 = imageio.get_reader(video_path + "go_attention.gif" )
-    back_attention_mp4 = imageio.get_reader(video_path + "back_attention.gif" )
-    idle_attention_mp4 = imageio.get_reader(video_path + "idle_attention.gif" )
-    go_laugh_mp4 = imageio.get_reader(video_path + "go_laugh.gif" )
-    back_laugh_mp4 = imageio.get_reader(video_path + "back_laugh.gif" )
-    idle_laugh_mp4 = imageio.get_reader(video_path + "idle_laugh.gif" )
-    go_angry_mp4 = imageio.get_reader(video_path + "go_angry.gif" )
-    back_angry_mp4 = imageio.get_reader(video_path + "back_angry.gif" )
-    idle_angry_mp4 = imageio.get_reader(video_path + "idle_angry.gif" )
-    go_sad_mp4 = imageio.get_reader(video_path + "go_sad.gif" )
-    back_sad_mp4 = imageio.get_reader(video_path + "back_sad.gif" )
-    idle_sad_mp4 = imageio.get_reader(video_path + "idle_sad.gif" )
-    go_confused_mp4 = imageio.get_reader(video_path + "go_confused.gif" )
-    back_confused_mp4 = imageio.get_reader(video_path + "back_confused.gif" )
-    idle_confused_mp4 = imageio.get_reader(video_path + "idle_confused.gif" )
+video_list_name = [   
+                    'idle',           
+                    'go_left', 'back_left', 'idle_left',
+                    'go_right', 'back_right', 'idle_right',
+                    'go_left', 'back_left', 'idle_left',
+                    'go_attentive', 'back_attentive', 'idle_attentive',
+                    'go_laugh', 'back_laugh', 'idle_laugh',
+                    'go_angry','back_angry', 'idle_angry',
+                    'go_sad', 'back_sad', 'idle_sad',
+                    'go_confused', 'back_confused', 'idle_confused']
+              
+for video_name in video_list_name:
 
-except FileNotFoundError:
-    print ("Error: Wrong path, cannot find animations")
-    sys.exit(1)
+    try:
+        video_mp4 = imageio.get_reader(video_path + video_name + ".gif" ) 
+        video_list.update( {video_name : video_mp4 } )
 
-################### ROS: Functions and variables for ROS logic ##########################
+    except FileNotFoundError:
+        print ("Error: Wrong path, cannot find " + video_name + ".gif")
+        sys.exit(1)
+
+
+# --------------------- Functions and variables for ROS logic  ----------------------- #
 
 newRosCommandFlag = False
 newRosCommand = ""
 last_expression = "IDLE"
+
+#Define the expressions accepted through rosservice
 expressions_list = ['IDLE','LOOK_LEFT', 'LOOK_RIGHT', 'HAPPY', 'ANGRY', 'SAD','ATTENTIVE', 'CONFUSED']
 
 
-def callback(req):
+def callbackRos(req):
 
     global newRosCommand
     global newRosCommandFlag
@@ -77,7 +99,7 @@ def callback(req):
             'HAPPY':      "go_laugh",
             'ANGRY':      "go_angry",
             'SAD':        "go_sad",
-            'ATTENTIVE':  "go_attention",
+            'ATTENTIVE':  "go_attentive",
             'CONFUSED':   "go_confused"
             }
 
@@ -112,7 +134,7 @@ def isNewRosCommand():
     return newRosCommandFlag
 
 
-##################### Shared functions and variables for the threads ######################
+# ------------------ Shared functions and variables for the threads  -------------------- #
 
 emotion = ""
 state = ""
@@ -154,11 +176,10 @@ def getEmotionCommand():
 def isNewEmotionCommand():
     return newEmotionCommandFlag
 
-############################# END OF SHARED FUNCTIONS AND VARIABLES #######################
+# ------------------------ End of shared functions and variables  ----------------------- #
 
 
-################### THREAD 1: graphical interface for atom2 eyes ##########################
-
+# --------------------- THREAD 1: graphical interface for atom2 eyes ---------------------#
 
 def interface_face(label):
 
@@ -175,70 +196,47 @@ def runInterfaceFace(label):
         #Update command from control_interface thread
         command = getEmotionCommand()
 
-        if command == "idle":
-            playEmotion(label, command, "idle", idle_mp4, idle_mp4)
- 
-        if command == "go_left":
-            playEmotion(label, command, "idle_left", go_left_mp4, idle_left_mp4)
+        fromTo = {
+            'idle':            ['idle','idle'],
+            'go_left':         ['go_left','idle_left'],
+            'back_left':       ['back_left','idle'],
+            'go_right':        ['go_right','idle_right'],
+            'back_right':      ['back_right','idle'],
+            'go_attentive':    ['go_attentive','idle_attentive'],
+            'back_attentive':  ['back_attentive','idle'],
+            'go_laugh':        ['go_laugh','idle_laugh'],
+            'back_laugh':      ['back_laugh','idle'],
+            'go_angry':        ['go_angry','idle_angry'],
+            'back_angry':      ['back_angry','idle'],
+            'go_sad':          ['go_sad','idle_sad'],
+            'back_sad':        ['back_sad','idle'],
+            'go_confused':     ['go_confused','idle_confused'],
+            'back_confused':   ['back_confused','idle']
+        }
 
-        if command == "back_left":
-            playEmotion(label, command, "idle", back_left_mp4, idle_mp4)
+        fromState, toState = fromTo.get(command, ['idle','idle'])
 
-        if command == "go_right":
-            playEmotion(label, command, "idle_right", go_right_mp4, idle_right_mp4)
-
-        if command == "back_right":
-            playEmotion(label, command, "idle", back_right_mp4, idle_mp4)
-
-        if command == "go_attention":
-            playEmotion(label, command, "idle_attention", go_attention_mp4, idle_attention_mp4)
-
-        if command == "back_attention":
-            playEmotion(label, command, "idle", back_attention_mp4, idle_mp4)
-
-        if command == "go_laugh":
-            playEmotion(label, command, "idle_laugh", go_laugh_mp4, idle_laugh_mp4)
-
-        if command == "back_laugh":
-            playEmotion(label, command, "idle", back_laugh_mp4, idle_mp4)
-
-        if command == "go_angry":
-            playEmotion(label, command, "idle_angry", go_angry_mp4, idle_angry_mp4)
-
-        if command == "back_angry":
-            playEmotion(label, command, "idle", back_angry_mp4, idle_mp4)
-
-        if command == "go_sad":
-            playEmotion(label, command, "idle_sad", go_sad_mp4, idle_sad_mp4)
-
-        if command == "back_sad":
-            playEmotion(label, command, "idle", back_sad_mp4, idle_mp4)
-        
-        if command == "go_confused":
-            playEmotion(label, command, "idle_confused", go_confused_mp4, idle_confused_mp4)
-
-        if command == "back_confused":
-            playEmotion(label, command, "idle", back_confused_mp4, idle_mp4)
+        playEmotion(label, fromState, toState)
 
 
-def playEmotion(label, emotion_command, emotion_idle_command, video, video_idle):
+def playEmotion(label, video_name, video_idle_name):
+
+    video = video_list[video_name]
+    video_idle = video_list [video_idle_name]
 
     #Update state to communicate with control_interface thread
-    updateCurrentState(emotion_command)
+    updateCurrentState(video_name)
     
     isStateFinished(False)
 
-    playVideoBlocking(label, video)
+    if video_name != "idle":
+        playVideoBlocking(label, video)
 
     isStateFinished(True)
 
     #Wait new command, hold the idle position
-    while(True):
+    playVideoPolling(label, video_idle) 
 
-        playVideoBackground(label, emotion_idle_command, video_idle) 
-
-        if isNewEmotionCommand():
-            return
 
 
 def playVideoBlocking(label,video):
@@ -247,107 +245,26 @@ def playVideoBlocking(label,video):
         frame_image = ImageTk.PhotoImage(Image.fromarray(image))
         label.config(image=frame_image)
         label.image = frame_image
-        
-
-frame = 0
-end_frame = 0
-
-def playVideoBackground(label,emotion_idle_command, video_idle):
-
-    global frame
-    global end_frame
-
-    if frame == 0:
-        video_idle.set_image_index(0)
-
-    frame+=1
-    end_frame = getEndFrame(emotion_idle_command)
-    print(frame)
-    image = video_idle.get_next_data() 
-    frame_image = ImageTk.PhotoImage(Image.fromarray(image))
-    label.config(image=frame_image)
-    label.image = frame_image
-
-    if frame >= end_frame:
-        video_idle.set_image_index(0)
-        frame = 0
 
 
-def getEndFrame(video_name):
+def playVideoPolling(label, video): 
 
-    switcher = {
-            'idle': 80,
-            'go_left': 9,
-            'back_left': 9,
-            'idle_left': 26,
-            'go_right': 9,
-            'back_right': 9,
-            'idle_right': 26,
-            'go_left': 9,
-            'back_left': 9,
-            'idle_left': 26,
-            'go_attention': 10,
-            'back_attention': 6,
-            'idle_attention': 26,
-            'go_laugh': 2,
-            'back_laugh': 7,
-            'idle_laugh': 33,
-            'go_angry': 8,
-            'back_angry': 8,
-            'idle_angry': 26,
-            'go_sad': 7,
-            'back_sad': 11,
-            'idle_sad': 26,
-            'go_confused': 6,
-            'back_confused': 6,
-            'idle_confused': 26,
-            }
+    while(True):
 
-    end_frame = switcher.get(video_name)
+        for image in video.iter_data():
+            frame_image = ImageTk.PhotoImage(Image.fromarray(image))
+            label.config(image=frame_image)
+            label.image = frame_image
 
-    return end_frame
+            if isNewEmotionCommand():
+                video.set_image_index(0)
+                return
 
 
-def printNumberOfFrames():
-
-    video_list = [
-              idle_mp4,
-              go_left_mp4, back_left_mp4, idle_left_mp4,
-              go_right_mp4, back_right_mp4, idle_right_mp4,
-              go_left_mp4, back_left_mp4, idle_left_mp4,
-              go_attention_mp4, back_attention_mp4, idle_attention_mp4,
-              go_laugh_mp4, back_laugh_mp4, idle_laugh_mp4,
-              go_angry_mp4, back_angry_mp4, idle_angry_mp4,
-              go_sad_mp4, back_sad_mp4, idle_sad_mp4,
-              go_confused_mp4, back_confused_mp4, idle_confused_mp4]
-
-    video_list_name = [   
-              'idle',           
-              'go_left', 'back_left', 'idle_left',
-              'go_right', 'back_right', 'idle_right',
-              'go_left', 'back_left', 'idle_left',
-              'go_attention', 'back_attention', 'idle_attention',
-              'go_laugh', 'back_laugh', 'idle_laugh',
-              'go_angry','back_angry', 'idle_angry',
-              'go_sad', 'back_sad', 'idle_sad',
-              'go_confused', 'back_confused', 'idle_confused']
-              
-    video_name = 0
-
-    for video in video_list:
-        print ("'" + str(video_list_name[video_name]) + "': "+ str(len(list(video.iter_data()))) + ",")
-        video_name+=1
-
-    time.sleep(10)
-
-# Añadir funcion de play especifica para idle
-# Limpiar el código que sobre o organizarlo mejor
+# ------------------------------------ End of THREAD 1 -----------------------------------#
 
 
-###################################### END OF THREAD 1 #####################################
-
-
-################# THREAD 2: backend code to control graphical interface ####################
+# ----------------THREAD 2: backend code to control graphical interface ------------------#
 
 def interface_control():
 
@@ -397,11 +314,10 @@ def waitFaceInterface():
         rospy.sleep(0.05)
 
 
+# ------------------------------------ End of THREAD 2 -----------------------------------#
 
 
-###################################### END OF THREAD 2 #####################################
-
-root = tk.Tk()
+# --------------------------------------- Main code --------------------------------------#
 
 def sigint_handler(sig, frame):
     root.quit()
@@ -410,38 +326,45 @@ def sigint_handler(sig, frame):
 
 if __name__ == "__main__":
 
-    #printNumberOfFrames()
+    # Tkinter instance
+    root = tk.Tk()
 
+    # Set signal to exit using terminal
     signal.signal(signal.SIGINT, sigint_handler)
+    
+    # Init ROS node and service
     rospy.init_node('atom2_face_node', anonymous=True)
-    rospy.Service('set_expression', SetExpression, callback)
+    rospy.Service('set_expression', SetExpression, callbackRos)
 
-    my_label = tk.Label(root)
-    my_label.pack()
-    my_label.config(fg="black", bg="black")
-    my_label.place(relx=.5, rely=.5, anchor="center")
+    # Configure label for video streaming
+    label = tk.Label(root)
+    label.pack()
+    label.config(fg="black", bg="black")
+    label.place(relx=.5, rely=.5, anchor="center")
 
-    thread_face = threading.Thread(target=interface_face, args=(my_label,))
+    # Thread one: graphical interface
+    thread_face = threading.Thread(target=interface_face, args=(label,))
     thread_face.daemon = 1
     thread_face.start()
 
+    # Thread two: control interface
     thread_control = threading.Thread(target=interface_control)
     thread_control.daemon = 1
     thread_control.start()
 
-    ws = root.winfo_screenwidth() # width of the screen
-    hs = root.winfo_screenheight() # height of the screen
+    # Load icon
+    try:
+        root.tk.call('wm', 'iconphoto', root._w, tk.PhotoImage(file=video_path+'icon.png'))
+    except:
+        print("Icon not found")
+
+    # Fills the entire screen
+    ws = root.winfo_screenwidth()
+    hs = root.winfo_screenheight() 
     x = (ws/2)
     y = -100 + ((hs/2))
     root.geometry('%dx%d+%d+%d' % (ws, hs, x, y))
     root.configure(bg='black')
     
-    try:
-        root.tk.call('wm', 'iconphoto', root._w, tk.PhotoImage(file=video_path+'icon_2.png'))
-    except:
-        print("Icon not found")
-
+    # Launch the application
     root.mainloop()
-  
-
-
