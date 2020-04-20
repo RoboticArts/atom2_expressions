@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """
 ---------------------------------------------------------------------
 Robotic Arts Industries
@@ -25,8 +27,6 @@ following programs should be run:
 		Author:  Robert Vasquez Zavaleta
 		Contact: roboticarts1@gmail.com
 """
-
-#!/usr/bin/env python3
 
 import rospy
 import sys
