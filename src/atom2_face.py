@@ -30,7 +30,7 @@ following programs should be run:
 
 import rospy
 import sys
-from atom2_emotions.srv import SetExpression, SetExpressionResponse
+from atom2_expressions.srv import SetExpression, SetExpressionResponse
 from std_msgs.msg import String
 import tkinter as tk, threading
 import imageio

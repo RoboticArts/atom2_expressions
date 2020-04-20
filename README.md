@@ -1,4 +1,4 @@
-# atom2_emotions
+# atom2_expressions
 Friendly interface to turn atom2 into a social robot
 
 <img src="src/animations/idle.gif" width="30%">
@@ -22,10 +22,10 @@ atom2_face node depends on the following python packages:
 
 ### 3. Installation
 
-Install atom2_emotions package
+Install atom2_expressions package
 ```
 $ cd ~/catkin_ws/src
-$ git clone https://github.com/RoboticArts/atom2_emotions.git
+$ git clone https://github.com/RoboticArts/atom2_expressions.git
 ```
 Install python dependencies
 ```
@@ -38,7 +38,7 @@ Build and source workspace
 
 ```
 $ cd ~/catkin_ws
-$ catkin_make --only-pkg-with-deps atom2_emotions
+$ catkin_make --only-pkg-with-deps atom2_expressions
 $ source devel/setup.bash
 ```
 
@@ -50,7 +50,7 @@ $ roscore
 ```
 In other terminal run atom2_face node
 ```
-$ rosrun atom2_emotions atom2_face
+$ rosrun atom2_expressions atom2_face
 ```
 Set an expression using ```set_expression``` service
 ```
