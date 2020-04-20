@@ -8,15 +8,18 @@ All Rights Reserved 2017-2020
 Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)
 https://creativecommons.org/licenses/by-nc-sa/4.0/
 ---------------------------------------------------------------------
+Package: atom2_expressions
 File: atom2_face.py
-Description:
-This file creates a graphical interface to generate the eyes of the atom2 robot. 
-Robot expressions are controlled from ROS through the set_expresion service.This
-program controls expressions but does not apply logic. For full functionality the
-following programs should be run:
 
-            -   atom2_hearing: manage voice recognition
-            -   atom2_vision: manage machine vision
+Description:
+
+    This file creates a graphical interface to generate the eyes of the atom2 robot. 
+    Robot expressions are controlled from ROS through the set_expresion service.This
+    program controls expressions but does not apply logic. For full functionality the
+    following packages should be run:
+
+            -   roboticarts_voice_control: manages voice recognition
+            -   roboticarts_vision: manages artificial vision
             -   atom2_speaking: handles speech
             -   atom2_emotions_control: Apply logic based on the information received
                                         by vision and hearing. Shows emotions by 
