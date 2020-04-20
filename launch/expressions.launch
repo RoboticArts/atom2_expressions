@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+
+<launch>
+
+    <node pkg="atom2_expressions" type="atom2_face.py" name="atom2_face_node" output="screen"/>
+
+</launch>
